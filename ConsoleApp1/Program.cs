@@ -8,6 +8,8 @@ namespace Battleship_game
 {
     class Program
     {
+        static int drawTop = 2;
+        static int drawLeft = 0;
         const int maxGridSize = 10;
         const int minGridSize = 1;
         const int totalShipCount = 10;
@@ -33,7 +35,18 @@ namespace Battleship_game
             Console.WriteLine(
                 "Напишите клетки, на которых вы хотите расположить корабль(формат <А9>)."
             );
-            string[] cellsInput = (Console.ReadLine() ?? "").Split();
+            string cellInputIsValid;
+            while (true)
+            {
+                cellInputIsValid = Console.ReadLine() ?? "";
+                if (string.IsNullOrWhiteSpace(cellInputIsValid))
+                {
+                    Console.WriteLine("Пустой ввод. Пожалуйста, введите клетку/и.");
+                    continue;
+                }
+                break;
+            }
+            string[] cellsInput = cellInputIsValid.ToUpper().Split();
             int shipCount = 0;
             while (true)
             {
@@ -57,7 +70,9 @@ namespace Battleship_game
                     }
                     else
                     {
-                        Console.WriteLine("Невозможно поставить корабль. Измените выбранные клетки.");
+                        Console.WriteLine(
+                            "Невозможно поставить корабль. Измените выбранные клетки."
+                        );
                     }
                 }
                 else if (shipCount < totalShipCount)
@@ -74,7 +89,17 @@ namespace Battleship_game
                 Console.WriteLine(
                     "Напишите клетки, на которых вы хотите расположить корабль(формат <А9>).\n"
                 );
-                cellsInput = (Console.ReadLine() ?? "").Split();
+                while (true)
+                {
+                    cellInputIsValid = Console.ReadLine() ?? "";
+                    if (string.IsNullOrWhiteSpace(cellInputIsValid))
+                    {
+                        Console.WriteLine("Пустой ввод. Пожалуйста, введите клетку/и.");
+                        continue;
+                    }
+                    break;
+                }
+                cellsInput = cellInputIsValid.ToUpper().Split();
             }
         }
 
@@ -82,7 +107,6 @@ namespace Battleship_game
         {
             if (CellsValidationCheck(cellsInput, alphabet))
             {
-
                 bool sameRow = true,
                     sameColumn = true;
                 int baseRow = int.Parse(cellsInput[0][1..]) - 1,
@@ -169,11 +193,11 @@ namespace Battleship_game
                     int c = place + dc;
                     if (r < 0 || r >= maxGridSize || c < 0 || c >= maxGridSize)
                         continue;
-                    if (grid[r, c] == 1) return false;
+                    if (grid[r, c] == 1)
+                        return false;
                 }
             }
             return true;
-
         }
 
         static bool IsFinish(int[,] grid)
@@ -210,54 +234,85 @@ namespace Battleship_game
 
         static void PrintGridForXPlayer(int[,] playerGrid)
         {
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            Console.ResetColor();
             int[,] enemyGrid = object.ReferenceEquals(playerGrid, firstPlayerGrid)
                 ? secondPlayerGrid
                 : firstPlayerGrid;
-            Console.WriteLine();
-            Console.Write("       Мой флот             Флот соперника\n");
+
+            Console.SetCursorPosition(drawLeft, drawTop);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("        Мой флот                  Флот соперника");
+            Console.ResetColor();
+            Console.SetCursorPosition(drawLeft, drawTop + 1);
+
             Console.Write("   ");
             for (int i = 0; i < maxGridSize; i++)
             {
                 Console.Write(alphabet[i] + " ");
             }
-            Console.Write("      ");
+            Console.Write("        ");
             for (int i = 0; i < maxGridSize; i++)
+            {
                 Console.Write(alphabet[i] + " ");
+            }
             Console.WriteLine();
+
             for (int i = 0; i < maxGridSize; i++)
             {
                 Console.Write((i + 1).ToString().PadLeft(2) + " ");
                 for (int j = 0; j < maxGridSize; j++)
                 {
                     int val = playerGrid[i, j];
-                    char ch;
                     if (val == 1)
-                        ch = 'O';
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write("O ");
+                    }
                     else if (val == 2)
-                        ch = '.';
+                    {
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write(". ");
+                    }
                     else if (val == 3)
-                        ch = 'X';
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("X ");
+                    }
                     else
-                        ch = ' ';
-                    Console.Write(ch + " ");
+                        Console.Write("  ");
+                    Console.ResetColor();
                 }
-                Console.Write("   ");
+
+                Console.Write("     ");
                 Console.Write((i + 1).ToString().PadLeft(2) + " ");
                 for (int j = 0; j < maxGridSize; j++)
                 {
                     int val = enemyGrid[i, j];
-                    char ch;
                     if (val == 2)
-                        ch = '.';
+                    {
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write(". ");
+                    }
                     else if (val == 3)
-                        ch = 'X';
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("X ");
+                    }
                     else
-                        ch = ' ';
-                    Console.Write(ch + " ");
+                        Console.Write("  ");
+                    Console.ResetColor();
                 }
                 Console.WriteLine();
             }
-            Console.WriteLine();
+        }
+
+        static void ClearLine()
+        {
+            int curLeft = Console.CursorLeft;
+            int curTop = Console.CursorTop;
+            Console.Write(new string(' ', Console.WindowWidth - 1));
+            Console.SetCursorPosition(curLeft, curTop);
         }
 
         static void Game(int[,] playerGrid)
@@ -265,27 +320,56 @@ namespace Battleship_game
             while (true)
             {
                 PrintGridForXPlayer(playerGrid);
+                Console.SetCursorPosition(drawLeft, drawTop + 15);
                 Console.WriteLine("Сделайте выстрел!");
-                string cell = Console.ReadLine() ?? "";
-                int[,] enemyGrid = ReferenceEquals(playerGrid, firstPlayerGrid) ? secondPlayerGrid : firstPlayerGrid;
-                if (CellsValidationCheck(cell.Split(), alphabet))
+                ClearLine();
+                string cell;
+                while (true)
+                {
+                    Console.SetCursorPosition(drawLeft, drawTop + 16);
+                    cell = Console.ReadLine() ?? "";
+                    if (string.IsNullOrWhiteSpace(cell))
+                    {
+                        Console.SetCursorPosition(drawLeft, drawTop + 14);
+                        ClearLine();
+                        Console.WriteLine("Пустой ввод. Пожалуйста, введите клетку/и.");
+                        continue;
+                    }
+                    break;
+                }
+                int[,] enemyGrid = ReferenceEquals(playerGrid, firstPlayerGrid)
+                    ? secondPlayerGrid
+                    : firstPlayerGrid;
+                if (CellsValidationCheck(cell.ToUpper().Split(), alphabet))
                 {
                     string didHit = HitCheck(cell, enemyGrid);
-                    if ( didHit == "YES")
+                    if (didHit == "YES")
                     {
+                        Console.SetCursorPosition(drawLeft, drawTop + 14);
+                        ClearLine();
                         Console.WriteLine("Вы попали! У вас дополнительный ход");
                     }
                     else if (didHit == "NO")
                     {
+                        Console.SetCursorPosition(drawLeft, drawTop + 14);
+                        ClearLine();
                         Console.WriteLine("Вы промахнулись:(. Сейчас ход другого игрока");
                         break;
                     }
                     else
+                    {
+                        Console.SetCursorPosition(drawLeft, drawTop + 14);
+                        ClearLine();
                         Console.WriteLine("Вы уже били в эту клетку. Попробуйте снова");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Некорректный ввод клетки. Напоминаем, поле состоит из рядов A-J и строк 1-10. Формат ввода <A9>");
+                    Console.SetCursorPosition(drawLeft, drawTop + 14);
+                    ClearLine();
+                    Console.WriteLine(
+                        "Некорректный ввод клетки. Напоминаем, поле состоит из рядов A-J и строк 1-10. Формат ввода <A9>"
+                    );
                 }
             }
             return;
@@ -293,6 +377,7 @@ namespace Battleship_game
 
         static void Main()
         {
+            Console.Clear();
             Console.WriteLine("Добро пожаловать в игру 'Морской бой'!");
             Console.WriteLine("Попробуйте победить, уничтожив все корабли соперника.\n");
             Console.WriteLine("Запускаю расстановку кораблей на поле 1 игрока:");
@@ -301,17 +386,21 @@ namespace Battleship_game
             Console.WriteLine("Запускаю расстановку кораблей на поле 2 игрока:");
 
             ShipArrangement(secondPlayerGrid, alphabet);
+            Console.Clear();
 
             while (true)
             {
-                Console.WriteLine("Ход за первым игроком.");
+                Console.SetCursorPosition(drawLeft, drawTop - 2);
+                Console.WriteLine("Ход первого игрока.");
                 Game(firstPlayerGrid);
                 if (IsFinish(firstPlayerGrid))
                 {
                     Console.WriteLine("Игрок 1, Вы победили, поздравляем!!!");
                     break;
                 }
-                Console.WriteLine("Ход за вторым игроком.");
+                ClearLine();
+                Console.SetCursorPosition(drawLeft, drawTop - 2);
+                Console.WriteLine("Ход второго игрока.");
                 Game(secondPlayerGrid);
                 if (IsFinish(secondPlayerGrid))
                 {
