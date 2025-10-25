@@ -200,7 +200,7 @@ namespace Battleship_game
             return true;
         }
 
-        static bool IsFinish(int[,] grid)
+        static bool AllDead(int[,] grid)
         {
             for (int i = 0; i < maxGridSize; i++)
             {
@@ -337,10 +337,11 @@ namespace Battleship_game
                     }
                     break;
                 }
+                cell = cell.ToUpper();
                 int[,] enemyGrid = ReferenceEquals(playerGrid, firstPlayerGrid)
                     ? secondPlayerGrid
                     : firstPlayerGrid;
-                if (CellsValidationCheck(cell.ToUpper().Split(), alphabet))
+                if (CellsValidationCheck(cell.Split(), alphabet))
                 {
                     string didHit = HitCheck(cell, enemyGrid);
                     if (didHit == "YES")
@@ -393,7 +394,7 @@ namespace Battleship_game
                 Console.SetCursorPosition(drawLeft, drawTop - 2);
                 Console.WriteLine("Ход первого игрока.");
                 Game(firstPlayerGrid);
-                if (IsFinish(firstPlayerGrid))
+                if (AllDead(secondPlayerGrid))
                 {
                     Console.WriteLine("Игрок 1, Вы победили, поздравляем!!!");
                     break;
@@ -402,7 +403,7 @@ namespace Battleship_game
                 Console.SetCursorPosition(drawLeft, drawTop - 2);
                 Console.WriteLine("Ход второго игрока.");
                 Game(secondPlayerGrid);
-                if (IsFinish(secondPlayerGrid))
+                if (AllDead(firstPlayerGrid))
                 {
                     Console.WriteLine("Игрок 2, Вы победили, поздравляем!!!");
                     break;
